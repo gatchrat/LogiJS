@@ -1,5 +1,87 @@
 // File: loadsave.js
-
+function saveSketchLogiFlash(filename) {
+	console.log("start");
+	//Create xml with gateml
+	var xmldoc = document.implementation.createDocument("", "", null);
+	console.log("created file");
+	var gateml = xmldoc.createElement("gateml");
+	gateml.setAttribute("stepMode", "off");
+	gateml.setAttribute("allowStep", "no");
+	gateml.setAttribute("y", "100");
+	gateml.setAttribute("x", "100");
+	gateml.setAttribute("zoom", "0.5");
+	gateml.setAttribute("oncolor", "ffcc00");
+	//create components
+	var xmlcomponents = xmldoc.createElement("components");
+	//create gates
+	var xmlgates = xmldoc.createElement("gates");
+	for (let i = 0; i < gates.length; i++) {
+		let curGate = gates[i];
+		var newGate=xmldoc.createElement("gate");
+		switch (curGate.logicFunction) {
+			case 'and':
+				newGate.setAttribute("type", "And");
+				break;
+			case 'or':
+				newGate.setAttribute("type", "Or");
+				break;
+			case 'xor':
+				newGate.setAttribute("type", "Xor");
+				break;
+			default:
+				console.log('Invalid logic function!');
+		}
+		newGate.setAttribute("rot", curGate.direction*90);
+		//Convert inverted inputs/outputs from true false to 1 0, maybe put in own function
+		let newIns = curGate.inputsInv;
+		for (let i = 0; i < newIns.length; i++) {
+			newIns[i] = newIns[i] ? 1 : 0;
+		}
+		newIns = newIns.join("");
+		let newOuts = curGate.outputsInv;
+		for (let i = 0; i < newOuts.length; i++) {
+			newOuts[i] = newOuts[i] ? 1 : 0;
+		}
+		newOuts = newOuts.join("");
+		newGate.setAttribute("ins", newIns);
+		newGate.setAttribute("outs", newOuts);
+		newGate.setAttribute("edge", "yes");
+		newGate.setAttribute("x", curGate.x);
+		newGate.setAttribute("y", curGate.y);
+		xmlgates.appendChild(newGate);
+	}
+	console.log("added gates");
+	//create sources
+	var xmlsources = xmldoc.createElement("sources");
+	//create drains
+	var xmldrains = xmldoc.createElement("drains");
+	//create wires
+	var xmlwires = xmldoc.createElement("wires");
+	for (let i = 0; i < wires.length; i++) {
+		let curWire = wires[i];
+		var newWire=xmldoc.createElement("wire");
+		newWire.setAttribute("righty", curWire.endY);
+		newWire.setAttribute("rightx", curWire.endX);
+		newWire.setAttribute("lefty", curWire.startY);
+		newWire.setAttribute("leftx", curWire.startX);
+		xmlwires.appendChild(newWire);
+	}
+	//create texts
+	var xmltexts = xmldoc.createElement("texts");
+	//add to gateml
+	
+	gateml.appendChild(xmlcomponents);
+	gateml.appendChild(xmlgates);
+	gateml.appendChild(xmlsources);
+	gateml.appendChild(xmldrains);
+	gateml.appendChild(xmlwires);
+	gateml.appendChild(xmltexts);
+	xmldoc.appendChild(gateml);
+	
+	var xmlText = new XMLSerializer().serializeToString(xmldoc);
+	console.log(xmldoc);
+	saveStrings(xmlText.split('\n'), 'dunno', 'xml');
+}
 function saveSketch(filename) {
     // Create a new json object to store all elements in
     let json = {};
