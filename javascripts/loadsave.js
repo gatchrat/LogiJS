@@ -13,6 +13,25 @@ function saveSketchLogiFlash(filename) {
 	gateml.setAttribute("oncolor", "ffcc00");
 	//create components
 	var xmlcomponents = xmldoc.createElement("components");
+	for (let i = 0; i < gates.length; i++) {
+		let curGate = gates[i];
+		var newComponent=xmldoc.createElement("component");
+		switch (curGate.logicFunction) {
+			case 'and':
+				createAnd(curGate,xmldoc,newComponent);
+				break;
+			case 'or':
+				createOr(curGate,xmldoc,newComponent);
+				break;
+			case 'xor':
+				newGate.setAttribute("type", "Xor");
+				break;
+			default:
+				console.log('Invalid logic function!');
+		}
+		
+		xmlcomponents.appendChild(newComponent);
+	}
 	//create gates
 	var xmlgates = xmldoc.createElement("gates");
 	for (let i = 0; i < gates.length; i++) {
@@ -20,10 +39,12 @@ function saveSketchLogiFlash(filename) {
 		var newGate=xmldoc.createElement("gate");
 		switch (curGate.logicFunction) {
 			case 'and':
-				newGate.setAttribute("type", "And");
+				newGate.setAttribute("type", "GenGate");
+				newGate.setAttribute("id", curGate.id);
 				break;
 			case 'or':
-				newGate.setAttribute("type", "Or");
+				newGate.setAttribute("type", "GenGate");
+				newGate.setAttribute("id", curGate.id);
 				break;
 			case 'xor':
 				newGate.setAttribute("type", "Xor");
@@ -46,8 +67,10 @@ function saveSketchLogiFlash(filename) {
 		newGate.setAttribute("ins", newIns);
 		newGate.setAttribute("outs", newOuts);
 		newGate.setAttribute("edge", "yes");
-		newGate.setAttribute("x", curGate.x);
-		newGate.setAttribute("y", curGate.y);
+		console.log(curGate.x+ "width"+curGate.w+" y"+curGate.y+"heigh" +curGate.h );
+		
+		newGate.setAttribute("x", curGate.x+30);
+		newGate.setAttribute("y", curGate.y+45);
 		xmlgates.appendChild(newGate);
 	}
 	console.log("added gates");
