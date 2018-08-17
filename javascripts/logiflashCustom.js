@@ -1,3 +1,4 @@
+//Generates Custom components so wires fit, ugly af + should only be one function
 function createAnd(curGate,xmldoc,newComponent) {
 	newComponent.setAttribute("name", "And");
 	newComponent.setAttribute("id", curGate.id);
@@ -15,7 +16,7 @@ function createAnd(curGate,xmldoc,newComponent) {
 		}
 		let xPos = -30;
 		if(curGate.inputsInv[i]){
-		 xPos = -10;
+		 xPos = -11;
 		}
 		let xmlConnector = xmldoc.createElement("connector");
 		xmlConnector.setAttribute("type", "in");
@@ -356,3 +357,5 @@ function createXor(curGate,xmldoc,newComponent) {
 	newComponent.appendChild(gateml);
    
 }
+
+	

@@ -100,13 +100,35 @@ function saveSketchLogiFlash(filename) {
 	}
 	//create wires
 	var xmlwires = xmldoc.createElement("wires");
-	for (let i = 0; i < wires.length; i++) {
-		let curWire = wires[i];
+	let leftPoints =[];
+	for (let i = 0; i < segments.length; i++) {
+		let curWire = segments[i];
 		var newWire=xmldoc.createElement("wire");
-		newWire.setAttribute("righty", curWire.endY);
-		newWire.setAttribute("rightx", curWire.endX);
-		newWire.setAttribute("lefty", curWire.startY);
-		newWire.setAttribute("leftx", curWire.startX);
+		if( curWire.endX > curWire.startX ){
+			
+			newWire.setAttribute("righty", curWire.endY);
+			newWire.setAttribute("rightx", curWire.endX);
+			newWire.setAttribute("lefty", curWire.startY);
+			newWire.setAttribute("leftx", curWire.startX);
+		}
+		else{
+			
+			if(leftPoints.includes([curWire.startY, curWire.startX])){
+				newWire.setAttribute("righty", curWire.endY);
+				newWire.setAttribute("rightx", curWire.endX);
+				newWire.setAttribute("lefty", curWire.startY);
+				newWire.setAttribute("leftx", curWire.startX);
+			}
+			else{
+				leftPoints.push([curWire.startY, curWire.startX]);
+				newWire.setAttribute("righty", curWire.startY);
+				newWire.setAttribute("rightx", curWire.startX);
+				newWire.setAttribute("lefty", curWire.endY);
+				newWire.setAttribute("leftx", curWire.endX);
+			}
+			
+			
+		}
 		xmlwires.appendChild(newWire);
 	}
 	//create texts
