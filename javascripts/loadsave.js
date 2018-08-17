@@ -24,7 +24,7 @@ function saveSketchLogiFlash(filename) {
 				createOr(curGate,xmldoc,newComponent);
 				break;
 			case 'xor':
-				newGate.setAttribute("type", "Xor");
+				createXor(curGate,xmldoc,newComponent);
 				break;
 			default:
 				console.log('Invalid logic function!');
@@ -47,7 +47,8 @@ function saveSketchLogiFlash(filename) {
 				newGate.setAttribute("id", curGate.id);
 				break;
 			case 'xor':
-				newGate.setAttribute("type", "Xor");
+				newGate.setAttribute("type", "GenGate");
+				newGate.setAttribute("id", curGate.id);
 				break;
 			default:
 				console.log('Invalid logic function!');
@@ -76,8 +77,27 @@ function saveSketchLogiFlash(filename) {
 	console.log("added gates");
 	//create sources
 	var xmlsources = xmldoc.createElement("sources");
+	for (let i = 0; i < inputs.length; i++) {
+		let curSource = inputs[i];
+		let newSource=xmldoc.createElement("source");
+		newSource.setAttribute("type","button");
+		newSource.setAttribute("x",curSource.x-curSource.w/2+7);
+		newSource.setAttribute("y",curSource.y+curSource.w/2);
+		newSource.setAttribute("scale","1");
+		xmlsources.appendChild(newSource);
+	}
+		
 	//create drains
 	var xmldrains = xmldoc.createElement("drains");
+	for (let i = 0; i < outputs.length; i++) {
+		let curDrain = outputs[i];
+		let newDrain=xmldoc.createElement("source");
+		newDrain.setAttribute("type","lamp");
+		newDrain.setAttribute("x",curDrain.x-curDrain.w+7);
+		newDrain.setAttribute("y",curDrain.y);
+		newDrain.setAttribute("scale","1");
+		xmlsources.appendChild(newDrain);
+	}
 	//create wires
 	var xmlwires = xmldoc.createElement("wires");
 	for (let i = 0; i < wires.length; i++) {
