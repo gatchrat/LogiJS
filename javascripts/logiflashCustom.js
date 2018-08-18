@@ -1,4 +1,13 @@
 //Generates Custom components so wires fit, ugly af + should only be one function
+function loadLut(name){
+	//[names][values]
+	let available = [["1-mux.json"],["00100111"]];
+	if(available[0].indexOf(name) !=-1){
+		return  available[1][available[0].indexOf(name)];
+	}
+	return "oof";
+	
+}
 function createAnd(curGate,xmldoc,newComponent) {
 	newComponent.setAttribute("name", "And");
 	newComponent.setAttribute("id", curGate.id);
@@ -136,10 +145,13 @@ function createOr(curGate,xmldoc,newComponent) {
 		else{
 			yPos=15.8;
 		}
-		
+		let xPos = -30;
+		if(curGate.inputsInv[i]){
+		 xPos = -11;
+		}
 		let xmlConnector = xmldoc.createElement("connector");
 		xmlConnector.setAttribute("type", "in");
-		xmlConnector.setAttribute("x", "-30");
+		xmlConnector.setAttribute("x", xPos);
 		xmlConnector.setAttribute("y", yPos);
 		xmlConnector.setAttribute("rot", "0");
 		xmlConnectors.appendChild(xmlConnector);
@@ -254,10 +266,13 @@ function createXor(curGate,xmldoc,newComponent) {
 		else{
 			yPos=15.8;
 		}
-		
+		let xPos = -30;
+		if(curGate.inputsInv[i]){
+		 xPos = -11;
+		}
 		let xmlConnector = xmldoc.createElement("connector");
 		xmlConnector.setAttribute("type", "in");
-		xmlConnector.setAttribute("x", "-30");
+		xmlConnector.setAttribute("x", xPos);
 		xmlConnector.setAttribute("y", yPos);
 		xmlConnector.setAttribute("rot", "0");
 		xmlConnectors.appendChild(xmlConnector);

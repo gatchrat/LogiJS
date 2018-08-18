@@ -1,10 +1,60 @@
 // File: loadsave.js
-function saveSketchLogiFlash(filename) {
-	console.log("start");
+function saveCustomLogiFlash(customGate) {
+	console.log(customGate);
 	//Create xml with gateml
-	var xmldoc = document.implementation.createDocument("", "", null);
-	console.log("created file");
-	var gateml = xmldoc.createElement("gateml");
+	let xmldoc = document.implementation.createDocument("", "", null);
+	let xmlComponent=xmldoc.createElement("component");
+	let gateml = xmldoc.createElement("gateml");
+	xmlComponent.setAttribute("name", customGate.caption);
+	xmlComponent.setAttribute("id", customGate.id);
+	xmlComponent.setAttribute("states", "no");
+	xmlComponent.setAttribute("wid", customGate.w);
+	xmlComponent.setAttribute("hei", customGate.h);
+	
+	let xmlLuts=xmldoc.createElement("luts");
+	xmlLut=xmldoc.createElement("lut");
+	xmlLut.setAttribute("values", loadLut(customGate.filename));
+	xmlLuts.appendChild(xmlLut);
+	
+	let xmlConnectors=xmldoc.createElement("connectors");
+	let tops = 0;
+	for(let i = 0;i<customGate.objects[INPNUM].length;i++){
+		let xPos;
+		let yPos;
+		if(!customGate.objects[INPNUM][i].isTop){
+			xPos =-customGate.w/2;
+			yPos =-customGate.h/2 +  (i+1 - tops) *customGate.h/ customGate.height;
+			console.log(yPos);
+			console.log(customGate.height);
+			console.log(i);
+		}
+		else{
+			
+			xPos =(customGate.h * tops) / customGate.height;
+			yPos =-customGate.h/2;
+			tops++;
+		}			
+		let xmlConnector = xmldoc.createElement("connector");
+		xmlConnector.setAttribute("type", "in");
+		xmlConnector.setAttribute("x", xPos);
+		xmlConnector.setAttribute("y", yPos);
+		xmlConnector.setAttribute("rot", "0");
+		xmlConnectors.appendChild(xmlConnector);
+	}
+	for(let i = 0;i<customGate.objects[OUTPNUM].length;i++){
+		let xPos;
+		let yPos = (customGate.h * i) / customGate.height;
+		xPos =customGate.w/2  ;			
+		let xmlConnector = xmldoc.createElement("connector");
+		xmlConnector.setAttribute("type", "out");
+		xmlConnector.setAttribute("x", xPos);
+		xmlConnector.setAttribute("y", yPos);
+		xmlConnector.setAttribute("rot", "0");
+		xmlConnectors.appendChild(xmlConnector);
+	}
+	
+	//Normal Component stuff
+	
 	gateml.setAttribute("stepMode", "off");
 	gateml.setAttribute("allowStep", "no");
 	gateml.setAttribute("y", "100");
@@ -12,10 +62,11 @@ function saveSketchLogiFlash(filename) {
 	gateml.setAttribute("zoom", "0.5");
 	gateml.setAttribute("oncolor", "ffcc00");
 	//create components
-	var xmlcomponents = xmldoc.createElement("components");
-	for (let i = 0; i < gates.length; i++) {
-		let curGate = gates[i];
-		var newComponent=xmldoc.createElement("component");
+	let curGates = customGate.objects[GATENUM];
+	let xmlcomponents = xmldoc.createElement("components");
+	for (let i = 0; i < curGates.length; i++) {
+		let curGate = curGates[i];
+		let newComponent=xmldoc.createElement("component");
 		switch (curGate.logicFunction) {
 			case 'and':
 				createAnd(curGate,xmldoc,newComponent);
@@ -31,12 +82,16 @@ function saveSketchLogiFlash(filename) {
 		}
 		
 		xmlcomponents.appendChild(newComponent);
+	} 
+	//save customs
+	for (let i = 0; i < customGate.responsibles.length; i++) {
+		xmlcomponents.appendChild(saveCustomLogiFlash(customGate.responsibles[i]));
 	}
 	//create gates
-	var xmlgates = xmldoc.createElement("gates");
-	for (let i = 0; i < gates.length; i++) {
-		let curGate = gates[i];
-		var newGate=xmldoc.createElement("gate");
+	let xmlgates = xmldoc.createElement("gates");
+	for (let i = 0; i < curGates.length; i++) {
+		let curGate = curGates[i];
+		let newGate=xmldoc.createElement("gate");
 		switch (curGate.logicFunction) {
 			case 'and':
 				newGate.setAttribute("type", "GenGate");
@@ -76,9 +131,9 @@ function saveSketchLogiFlash(filename) {
 	}
 	console.log("added gates");
 	//create sources
-	var xmlsources = xmldoc.createElement("sources");
-	for (let i = 0; i < inputs.length; i++) {
-		let curSource = inputs[i];
+	let xmlsources = xmldoc.createElement("sources");
+	for (let i = 0; i < customGate.objects[INPNUM].length; i++) {
+		let curSource = customGate.objects[INPNUM][i];
 		let newSource=xmldoc.createElement("source");
 		newSource.setAttribute("type","button");
 		newSource.setAttribute("x",curSource.x-curSource.w/2+7);
@@ -88,22 +143,22 @@ function saveSketchLogiFlash(filename) {
 	}
 		
 	//create drains
-	var xmldrains = xmldoc.createElement("drains");
-	for (let i = 0; i < outputs.length; i++) {
-		let curDrain = outputs[i];
-		let newDrain=xmldoc.createElement("source");
+	let xmldrains = xmldoc.createElement("drains");
+	for (let i = 0; i < customGate.objects[OUTPNUM].length; i++) {
+		let curDrain =customGate.objects[OUTPNUM][i];
+		let newDrain=xmldoc.createElement("drain");
 		newDrain.setAttribute("type","lamp");
 		newDrain.setAttribute("x",curDrain.x-curDrain.w+7);
 		newDrain.setAttribute("y",curDrain.y);
 		newDrain.setAttribute("scale","1");
-		xmlsources.appendChild(newDrain);
+		xmldrains.appendChild(newDrain);
 	}
 	//create wires
-	var xmlwires = xmldoc.createElement("wires");
+	let xmlwires = xmldoc.createElement("wires");
 	let leftPoints =[];
-	for (let i = 0; i < segments.length; i++) {
-		let curWire = segments[i];
-		var newWire=xmldoc.createElement("wire");
+	for (let i = 0; i < customGate.objects[SEGNUM].length; i++) {
+		let curWire = customGate.objects[SEGNUM][i];
+		let newWire=xmldoc.createElement("wire");
 		if( curWire.endX > curWire.startX ){
 			
 			newWire.setAttribute("righty", curWire.endY);
@@ -132,7 +187,183 @@ function saveSketchLogiFlash(filename) {
 		xmlwires.appendChild(newWire);
 	}
 	//create texts
-	var xmltexts = xmldoc.createElement("texts");
+	let xmltexts = xmldoc.createElement("texts");
+	//add to gateml
+	
+	gateml.appendChild(xmlcomponents);
+	gateml.appendChild(xmlgates);
+	gateml.appendChild(xmlsources);
+	gateml.appendChild(xmldrains);
+	gateml.appendChild(xmlwires);
+	gateml.appendChild(xmltexts);
+	xmlComponent.appendChild(xmlConnectors);
+	xmlComponent.appendChild(xmlLuts);
+	xmlComponent.appendChild(xmldoc.createElement("annotation"));
+	xmlComponent.appendChild(gateml);
+	xmldoc.appendChild(xmlComponent);
+	
+	return xmlComponent;
+}
+function saveSketchLogiFlash() {
+	//Create xml with gateml
+	let xmldoc = document.implementation.createDocument("", "", null);
+	let gateml = xmldoc.createElement("gateml");
+	gateml.setAttribute("stepMode", "off");
+	gateml.setAttribute("allowStep", "no");
+	gateml.setAttribute("y", "100");
+	gateml.setAttribute("x", "100");
+	gateml.setAttribute("zoom", "0.5");
+	gateml.setAttribute("oncolor", "ffcc00");
+	//create components
+	let xmlcomponents = xmldoc.createElement("components");
+	for (let i = 0; i < gates.length; i++) {
+		let curGate = gates[i];
+		let newComponent=xmldoc.createElement("component");
+		switch (curGate.logicFunction) {
+			case 'and':
+				createAnd(curGate,xmldoc,newComponent);
+				break;
+			case 'or':
+				createOr(curGate,xmldoc,newComponent);
+				break;
+			case 'xor':
+				createXor(curGate,xmldoc,newComponent);
+				break;
+			default:
+				console.log('Invalid logic function!');
+		}
+		
+		xmlcomponents.appendChild(newComponent);
+	} 
+	//save customs
+	let supported = [];
+	let xmlgates = xmldoc.createElement("gates");
+	for (let i = 0; i < customs.length; i++) {
+		xmlcomponents.appendChild(saveCustomLogiFlash(customs[i]));
+		let curGate = customs[i]
+		let newGate=xmldoc.createElement("gate");
+		newGate.setAttribute("type", "GenGate");
+		newGate.setAttribute("id", curGate.id);
+		newGate.setAttribute("rot", curGate.direction*90);
+		//Convert inverted inputs/outputs from true false to 1 0, maybe put in own function
+		let newIns = curGate.inputs;
+		for (let i = 0; i < newIns.length; i++) {
+			newIns[i] = newIns[i] ? 1 : 0;
+		}
+		newIns = newIns.join("");
+		let newOuts = curGate.outputs;
+		for (let i = 0; i < newOuts.length; i++) {
+			newOuts[i] = newOuts[i] ? 1 : 0;
+		}
+		newOuts = newOuts.join("");
+		newGate.setAttribute("ins", newIns);
+		newGate.setAttribute("outs", newOuts);
+		newGate.setAttribute("edge", "yes");
+		
+		newGate.setAttribute("x", curGate.x+curGate.w/2);
+		newGate.setAttribute("y", curGate.y+curGate.h/2);
+		xmlgates.appendChild(newGate);
+	}
+	//create gates
+	
+	for (let i = 0; i < gates.length; i++) {
+		let curGate = gates[i];
+		let newGate=xmldoc.createElement("gate");
+		switch (curGate.logicFunction) {
+			case 'and':
+				newGate.setAttribute("type", "GenGate");
+				newGate.setAttribute("id", curGate.id);
+				break;
+			case 'or':
+				newGate.setAttribute("type", "GenGate");
+				newGate.setAttribute("id", curGate.id);
+				break;
+			case 'xor':
+				newGate.setAttribute("type", "GenGate");
+				newGate.setAttribute("id", curGate.id);
+				break;
+			default:
+				console.log('Invalid logic function!');
+		}
+		newGate.setAttribute("rot", curGate.direction*90);
+		//Convert inverted inputs/outputs from true false to 1 0, maybe put in own function
+		let newIns = curGate.inputsInv;
+		for (let i = 0; i < newIns.length; i++) {
+			newIns[i] = newIns[i] ? 1 : 0;
+		}
+		newIns = newIns.join("");
+		let newOuts = curGate.outputsInv;
+		for (let i = 0; i < newOuts.length; i++) {
+			newOuts[i] = newOuts[i] ? 1 : 0;
+		}
+		newOuts = newOuts.join("");
+		newGate.setAttribute("ins", newIns);
+		newGate.setAttribute("outs", newOuts);
+		newGate.setAttribute("edge", "yes");
+		
+		newGate.setAttribute("x", curGate.x+30);
+		newGate.setAttribute("y", curGate.y+45);
+		xmlgates.appendChild(newGate);
+	}
+	console.log("added gates");
+	//create sources
+	let xmlsources = xmldoc.createElement("sources");
+	for (let i = 0; i < inputs.length; i++) {
+		let curSource = inputs[i];
+		let newSource=xmldoc.createElement("source");
+		newSource.setAttribute("type","button");
+		newSource.setAttribute("x",curSource.x-curSource.w/2+6);
+		newSource.setAttribute("y",curSource.y+curSource.w/2);
+		newSource.setAttribute("scale","1");
+		xmlsources.appendChild(newSource);
+	}
+		
+	//create drains
+	let xmldrains = xmldoc.createElement("drains");
+	for (let i = 0; i < outputs.length; i++) {
+		let curDrain = outputs[i];
+		let newDrain=xmldoc.createElement("drain");
+		newDrain.setAttribute("type","lamp");
+		newDrain.setAttribute("x",curDrain.x-curDrain.w+7);
+		newDrain.setAttribute("y",curDrain.y);
+		newDrain.setAttribute("scale","1");
+		xmlsources.appendChild(newDrain);
+	}
+	//create wires
+	let xmlwires = xmldoc.createElement("wires");
+	let leftPoints =[];
+	for (let i = 0; i < segments.length; i++) {
+		let curWire = segments[i];
+		let newWire=xmldoc.createElement("wire");
+		if( curWire.endX > curWire.startX ){
+			
+			newWire.setAttribute("righty", curWire.endY);
+			newWire.setAttribute("rightx", curWire.endX);
+			newWire.setAttribute("lefty", curWire.startY);
+			newWire.setAttribute("leftx", curWire.startX);
+		}
+		else{
+			
+			if(leftPoints.includes([curWire.startY, curWire.startX])){
+				newWire.setAttribute("righty", curWire.endY);
+				newWire.setAttribute("rightx", curWire.endX);
+				newWire.setAttribute("lefty", curWire.startY);
+				newWire.setAttribute("leftx", curWire.startX);
+			}
+			else{
+				leftPoints.push([curWire.startY, curWire.startX]);
+				newWire.setAttribute("righty", curWire.startY);
+				newWire.setAttribute("rightx", curWire.startX);
+				newWire.setAttribute("lefty", curWire.endY);
+				newWire.setAttribute("leftx", curWire.endX);
+			}
+			
+			
+		}
+		xmlwires.appendChild(newWire);
+	}
+	//create texts
+	let xmltexts = xmldoc.createElement("texts");
 	//add to gateml
 	
 	gateml.appendChild(xmlcomponents);
@@ -143,7 +374,7 @@ function saveSketchLogiFlash(filename) {
 	gateml.appendChild(xmltexts);
 	xmldoc.appendChild(gateml);
 	
-	var xmlText = new XMLSerializer().serializeToString(xmldoc);
+	let xmlText = new XMLSerializer().serializeToString(xmldoc);
 	console.log(xmldoc);
 	saveStrings(xmlText.split('\n'), 'dunno', 'xml');
 }
