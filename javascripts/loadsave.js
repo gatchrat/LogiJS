@@ -30,7 +30,7 @@ function saveCustomLogiFlash(customGate) {
 		}
 		else{
 			
-			xPos =(customGate.h * tops) / customGate.height;
+			xPos =-customGate.w/2 +  (tops+1) *customGate.h/ customGate.height
 			yPos =-customGate.h/2;
 			tops++;
 		}			
@@ -43,7 +43,7 @@ function saveCustomLogiFlash(customGate) {
 	}
 	for(let i = 0;i<customGate.objects[OUTPNUM].length;i++){
 		let xPos;
-		let yPos = (customGate.h * i) / customGate.height;
+		let yPos =-customGate.h/2 +  (i+1) *customGate.h/ customGate.height;
 		xPos =customGate.w/2  ;			
 		let xmlConnector = xmldoc.createElement("connector");
 		xmlConnector.setAttribute("type", "out");
@@ -87,6 +87,14 @@ function saveCustomLogiFlash(customGate) {
 	for (let i = 0; i < customGate.responsibles.length; i++) {
 		xmlcomponents.appendChild(saveCustomLogiFlash(customGate.responsibles[i]));
 	}
+	let xmlAnnotations = xmldoc.createElement("annotation");
+	let xmlText = xmldoc.createElement("text");
+	xmlText.setAttribute("size", "15");
+	xmlText.setAttribute("x","-21");
+	xmlText.setAttribute("y","-15");
+	xmlText.innerHTML =customGate.caption ;
+	
+	xmlAnnotations.appendChild(xmlText);
 	//create gates
 	let xmlgates = xmldoc.createElement("gates");
 	for (let i = 0; i < curGates.length; i++) {
@@ -198,7 +206,7 @@ function saveCustomLogiFlash(customGate) {
 	gateml.appendChild(xmltexts);
 	xmlComponent.appendChild(xmlConnectors);
 	xmlComponent.appendChild(xmlLuts);
-	xmlComponent.appendChild(xmldoc.createElement("annotation"));
+	xmlComponent.appendChild(xmlAnnotations);
 	xmlComponent.appendChild(gateml);
 	xmldoc.appendChild(xmlComponent);
 	
